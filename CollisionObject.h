@@ -27,6 +27,7 @@ public:
 	DirectX::SimpleMath::Vector3					m_objectVel;		// オブジェクトの速度
 	DirectX::SimpleMath::Vector3					m_objectAcc;		// オブジェクトの加速度
 	DirectX::SimpleMath::Vector4					m_objectColor;		// オブジェクトの色
+	DirectX::SimpleMath::Quaternion					m_objectRot;		// オブジェクトの回転
 	std::unique_ptr<T>								m_objectCollider;	// オブジェクトの当たり判定
 	bool											m_objectWireframe;	// オブジェクトがワイヤーフレームか
 	float											m_objectWeight;		// オブジェクトの重さ
@@ -47,7 +48,7 @@ public:
 		m_objectVel *= .98f;
 		m_objectPos += m_objectVel;
 		// オブジェクトの更新
-		m_objectMatrix = Matrix::CreateScale(m_objectSize) * Matrix::CreateTranslation(m_objectPos);
+		m_objectMatrix = Matrix::CreateScale(m_objectSize) * Matrix::CreateFromQuaternion(m_objectRot) * Matrix::CreateTranslation(m_objectPos);
 		// オブジェクトの当たり判定
 		m_objectCollider = std::make_unique<T>(CollisionGenerators::GetCollision<T>(*this));
 	}

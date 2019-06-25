@@ -23,6 +23,9 @@ namespace CollisionGenerators
 	Collisions::Capsule GetCollision(CollisionObject<Collisions::Capsule>& obj)
 	{
 		float radius = std::max({ obj.m_objectSize.x, obj.m_objectSize.y, obj.m_objectSize.z }) *.5f;
-		return Collisions::Capsule(obj.m_objectPos + Vector3::Up * (obj.m_objectSize.y - radius), obj.m_objectPos + Vector3::Down * (obj.m_objectSize.y - radius), radius);
+		return Collisions::Capsule(
+			obj.m_objectPos + Vector3::Transform(Vector3::Up, obj.m_objectRot) * (obj.m_objectSize.y - radius),
+			obj.m_objectPos + Vector3::Transform(Vector3::Down, obj.m_objectRot) * (obj.m_objectSize.y - radius),
+			radius);
 	}
 }

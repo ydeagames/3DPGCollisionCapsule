@@ -19,18 +19,19 @@ MyGame::~MyGame()
 void MyGame::Initialize(GameContext & context)
 {
 	// オブジェクトの要素を順に処理
-	m_objectA = std::make_unique<CollisionObject<Collisions::Sphere>>();
+	m_objectA = std::make_unique<CollisionObject<Collisions::Capsule>>();
 	m_objectA->Initialize(context);
 	m_objectA->m_objectPos = Vector3::Zero;
 	m_objectA->m_objectColor = Colors::Yellow;
 	m_objectA->m_objectVel = Vector3::Zero;
 	m_objectA->m_objectSize = Vector3::One * 4;
+	m_objectA->m_objectRot = Quaternion::CreateFromAxisAngle(Vector3::UnitZ, XMConvertToRadians(45));
 	m_objectA->m_objectWeight = 1;
 
 	// オブジェクトの要素を順に処理
 	for (int iz = -5; iz <= 5; iz++) for (int ix = -5; ix <= 5; ix++)
 	{
-		auto obj = std::make_unique<CollisionObject<Collisions::Capsule>>();
+		auto obj = std::make_unique<CollisionObject<Collisions::Sphere>>();
 		obj->Initialize(context);
 		obj->m_objectPos = Vector3(float(ix), 0, float(iz));
 		obj->m_objectColor = Colors::Blue;
@@ -79,6 +80,18 @@ void MyGame::Update(GameContext & context)
 		m_objectA->m_objectAcc = input * .01f;
 	}
 
+	static auto lastMouse = Vector3::Zero;
+	if (Input::GetMouseButtonDown(Input::Buttons::MouseRight))
+	{
+		lastMouse = Input::GetMousePosition();
+	}
+	else if (Input::GetMouseButton(Input::Buttons::MouseRight))
+	{
+		auto mouse = Input::GetMousePosition();
+		auto delta = (mouse - lastMouse) * .001f;
+		m_objectA->m_objectRot *= Quaternion::CreateFromYawPitchRoll(delta.x, delta.y, 0);
+	}
+
 	// オブジェクトの更新
 	m_objectA->Update(context);
 	for (auto& obj : m_objectB)
@@ -112,7 +125,7 @@ void MyGame::Render(GameContext & context)
 
 	// 文字描画
 	m_batch->Begin();
-	m_font->DrawString(m_batch.get(), L"WASD 横移動\nQE 上下移動\nZC 拡大縮小\nマウス デバッグカメラ", Vector3::Zero, Colors::White);
+	m_font->DrawString(m_batch.get(), L"WASD 横移動\nQE 上下移動\nZC 拡大縮小\n左ドラッグ デバッグカメラ\n右ドラッグ オブジェ回転", Vector3::Zero, Colors::White);
 	m_batch->End();
 }
 
