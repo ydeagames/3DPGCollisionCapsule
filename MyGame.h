@@ -10,6 +10,10 @@ private:
 	std::unique_ptr<CollisionObject<Collisions::Sphere>> m_objectA;
 	std::vector<std::unique_ptr<CollisionObject<Collisions::Capsule>>> m_objectB;
 
+	// ƒtƒHƒ“ƒg
+	std::unique_ptr<DirectX::SpriteFont> m_font;
+	std::unique_ptr<DirectX::SpriteBatch> m_batch;
+
 public:
 	MyGame();
 	~MyGame();

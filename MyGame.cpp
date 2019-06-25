@@ -39,6 +39,9 @@ void MyGame::Initialize(GameContext & context)
 		obj->m_objectWeight = 1;
 		m_objectB.emplace_back(std::move(obj));
 	}
+
+	m_font = std::make_unique<SpriteFont>(context.GetDR().GetD3DDevice(), L"logofont.spritefont");
+	m_batch = std::make_unique<SpriteBatch>(context.GetDR().GetD3DDeviceContext());
 }
 
 namespace
@@ -106,6 +109,11 @@ void MyGame::Render(GameContext & context)
 	m_objectA->Render(context);
 	for (auto& obj : m_objectB)
 		obj->Render(context);
+
+	// 文字描画
+	m_batch->Begin();
+	m_font->DrawString(m_batch.get(), L"WASD 横移動\nQE 上下移動\nZC 拡大縮小\nマウス デバッグカメラ", Vector3::Zero, Colors::White);
+	m_batch->End();
 }
 
 void MyGame::Finalize(GameContext & context)
