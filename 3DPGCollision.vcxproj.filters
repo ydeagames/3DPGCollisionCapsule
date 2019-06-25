@@ -27,6 +27,12 @@
     <ClInclude Include="GridFloor.h">
       <Filter>Debug</Filter>
     </ClInclude>
+    <ClInclude Include="GameContext.h" />
+    <ClInclude Include="MyGame.h" />
+    <ClInclude Include="GameCamera.h" />
+    <ClInclude Include="CollisionObject.h" />
+    <ClInclude Include="Collision.h" />
+    <ClInclude Include="Input.h" />
     <ClInclude Include="CapsulePrimitive.h" />
   </ItemGroup>
   <ItemGroup>
@@ -42,6 +48,11 @@
     <ClCompile Include="GridFloor.cpp">
       <Filter>Debug</Filter>
     </ClCompile>
+    <ClCompile Include="MyGame.cpp" />
+    <ClCompile Include="GameCamera.cpp" />
+    <ClCompile Include="CollisionObject.cpp" />
+    <ClCompile Include="Collision.cpp" />
+    <ClCompile Include="Input.cpp" />
     <ClCompile Include="CapsulePrimitive.cpp" />
   </ItemGroup>
   <ItemGroup>

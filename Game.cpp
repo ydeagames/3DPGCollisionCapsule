@@ -39,9 +39,15 @@ Game::~Game()
 // Initialize the Direct3D resources required to run.
 void Game::Initialize(HWND window, int width, int height)
 {
+	// ロジック作成
+	m_myGame = std::make_unique<MyGame>();
+
 	// マウスの作成
 	m_pMouse = std::make_unique<Mouse>();
 	m_pMouse->SetWindow(window);
+
+	// キーボード作成
+	m_pKeyboard = std::make_unique<Keyboard>();
 
 	// デバッグカメラ作成
 	m_pDebugCamera = new DebugCamera();
@@ -59,10 +65,6 @@ void Game::Initialize(HWND window, int width, int height)
 
 	m_deviceResources->CreateWindowSizeDependentResources();
     CreateWindowSizeDependentResources();
-
-	// オブジェクトの初期座標設定
-	m_object1Pos = SimpleMath::Vector3(1.0f, 0.0f, 0.0f);
-	m_object2Pos = SimpleMath::Vector3(-1.0f, 0.0f, 0.0f);
 
     // TODO: Change the timer settings if you want something other than the default variable timestep mode.
     // e.g. for 60 FPS fixed timestep update logic, call:
@@ -92,9 +94,8 @@ void Game::Update(DX::StepTimer const& timer)
     // TODO: Add your game logic here.
     elapsedTime;
 
-	// オブジェクトの更新
-	m_object1Matrix = SimpleMath::Matrix::CreateTranslation(m_object1Pos);
-	m_object2Matrix = SimpleMath::Matrix::CreateTranslation(m_object2Pos);
+	// ロジック更新
+	m_myGame->Update(*this);
 
 	m_pDebugCamera->update();
 }
@@ -118,11 +119,11 @@ void Game::Render()
     // TODO: Add your rendering code here.
     context;
 
-	m_pGridFloor->draw(context, m_pDebugCamera->getViewMatrix(), m_projection);
+	m_camera.view = m_pDebugCamera->getViewMatrix();
+	m_pGridFloor->draw(context, m_camera.view, m_camera.projection);
 
-	// オブジェクトの描画
-	m_pObject1->Draw(m_object1Matrix, m_pDebugCamera->getViewMatrix(), m_projection, Colors::Red);
-	m_pObject2->Draw(m_object2Matrix, m_pDebugCamera->getViewMatrix(), m_projection, Colors::Blue, nullptr);
+	// ロジック描画
+	m_myGame->Render(*this);
 
     m_deviceResources->PIXEndEvent();
 
@@ -211,9 +212,8 @@ void Game::CreateDeviceDependentResources()
     // TODO: Initialize device dependent objects here (independent of window size).
     device;
 
-	// オブジェクト作成
-	m_pObject1 = GeometricPrimitive::CreateSphere(context);
-	m_pObject2 = CapsulePrimitive::Create(context);
+	// ロジック作成
+	m_myGame->Initialize(*this);
 }
 
 // Allocate all memory resources that change on a window SizeChanged event.
@@ -229,21 +229,25 @@ void Game::CreateWindowSizeDependentResources()
 	float fovAngleY = XMConvertToRadians(45.0f);
 
 	// 射影行列を作成する
-	m_projection = DirectX::SimpleMath::Matrix::CreatePerspectiveFieldOfView(
+	GetCamera().projection = SimpleMath::Matrix::CreatePerspectiveFieldOfView(
 		fovAngleY,
 		aspectRatio,
 		0.01f,
 		100.0f
 	);
-
+	// ビューポート行列を作成する
+	GetCamera().viewport = 
+		SimpleMath::Matrix::CreateScale(SimpleMath::Vector3(.5f, -.5f, 1.f)) *
+		SimpleMath::Matrix::CreateTranslation(SimpleMath::Vector3(.5f, .5f, 0.f)) *
+		SimpleMath::Matrix::CreateScale(SimpleMath::Vector3(float(size.right), float(size.bottom), 1.f));
 }
 
 void Game::OnDeviceLost()
 {
     // TODO: Add Direct3D resource cleanup here.
 
-	m_pObject1.reset();
-	m_pObject2.reset();
+	// ロジック解放
+	m_myGame->Finalize(*this);
 }
 
 void Game::OnDeviceRestored()
