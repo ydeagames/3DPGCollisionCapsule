@@ -167,6 +167,7 @@
   <ItemGroup>
     <ClInclude Include="CapsulePrimitive.h" />
     <ClInclude Include="Collision.h" />
+    <ClInclude Include="CollisionModels.h" />
     <ClInclude Include="CollisionObject.h" />
     <ClInclude Include="DebugCamera.h" />
     <ClInclude Include="DeviceResources.h" />
@@ -182,6 +183,7 @@
   <ItemGroup>
     <ClCompile Include="CapsulePrimitive.cpp" />
     <ClCompile Include="Collision.cpp" />
+    <ClCompile Include="CollisionModels.cpp" />
     <ClCompile Include="CollisionObject.cpp" />
     <ClCompile Include="DebugCamera.cpp" />
     <ClCompile Include="DeviceResources.cpp" />

@@ -1,79 +1,9 @@
 #pragma once
 #include "Collision.h"
 #include "CapsulePrimitive.h"
+#include "CollisionModels.h"
 
 class GameContext;
-
-namespace CollisionModels
-{
-	template<typename T>
-	class CollisionModel
-	{
-	public:
-		CollisionModel(ID3D11DeviceContext1* context);
-
-		void Draw(DirectX::SimpleMath::Matrix world, DirectX::CXMMATRIX view, DirectX::CXMMATRIX projection, DirectX::FXMVECTOR color = DirectX::Colors::White, _In_opt_ ID3D11ShaderResourceView* texture = nullptr, bool wireframe = false,
-			_In_opt_ std::function<void __cdecl()> setCustomState = nullptr) const;
-	};
-
-		template<>
-	class CollisionModel<Collisions::Sphere>
-	{
-		static std::unique_ptr<DirectX::GeometricPrimitive> s_geo;
-
-	public:
-		CollisionModel(ID3D11DeviceContext1* context)
-		{
-			if (!s_geo)
-				s_geo = DirectX::GeometricPrimitive::CreateSphere(context);
-		}
-
-		void Draw(DirectX::SimpleMath::Matrix world, DirectX::CXMMATRIX view, DirectX::CXMMATRIX projection, DirectX::FXMVECTOR color = DirectX::Colors::White, _In_opt_ ID3D11ShaderResourceView* texture = nullptr, bool wireframe = false,
-			_In_opt_ std::function<void __cdecl()> setCustomState = nullptr) const
-		{
-			s_geo->Draw(world, view, projection, color, texture, wireframe, setCustomState);
-		}
-	};
-
-	template<>
-	class CollisionModel<Collisions::Box>
-	{
-		static std::unique_ptr<DirectX::GeometricPrimitive> s_geo;
-
-	public:
-		CollisionModel(ID3D11DeviceContext1* context)
-		{
-			if (!s_geo)
-				s_geo = DirectX::GeometricPrimitive::CreateCube(context);
-		}
-
-		void Draw(DirectX::SimpleMath::Matrix world, DirectX::CXMMATRIX view, DirectX::CXMMATRIX projection, DirectX::FXMVECTOR color = DirectX::Colors::White, _In_opt_ ID3D11ShaderResourceView* texture = nullptr, bool wireframe = false,
-			_In_opt_ std::function<void __cdecl()> setCustomState = nullptr) const
-		{
-			s_geo->Draw(world, view, projection, color, texture, wireframe, setCustomState);
-		}
-	};
-
-
-	template<>
-	class CollisionModel<Collisions::Capsule>
-	{
-		static std::unique_ptr<CapsulePrimitive> s_geo;
-
-	public:
-		CollisionModel(ID3D11DeviceContext1* context)
-		{
-			if (!s_geo)
-				s_geo = CapsulePrimitive::Create(context);
-		}
-
-		void Draw(DirectX::SimpleMath::Matrix world, DirectX::CXMMATRIX view, DirectX::CXMMATRIX projection, DirectX::FXMVECTOR color = DirectX::Colors::White, _In_opt_ ID3D11ShaderResourceView* texture = nullptr, bool wireframe = false,
-			_In_opt_ std::function<void __cdecl()> setCustomState = nullptr) const
-		{
-			s_geo->Draw(world, view, projection, color, texture, wireframe, setCustomState);
-		}
-	};
-}
 
 template<typename T>
 class CollisionObject;

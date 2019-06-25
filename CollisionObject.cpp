@@ -7,13 +7,6 @@
 using namespace DirectX;
 using namespace DirectX::SimpleMath;
 
-namespace CollisionModels
-{
-	std::unique_ptr<DirectX::GeometricPrimitive> CollisionModel<Collisions::Sphere>::s_geo;
-	std::unique_ptr<DirectX::GeometricPrimitive> CollisionModel<Collisions::Box>::s_geo;
-	std::unique_ptr<CapsulePrimitive> CollisionModel<Collisions::Capsule>::s_geo;
-}
-
 namespace CollisionGenerators
 {
 	template<>

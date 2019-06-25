@@ -34,6 +34,7 @@
     <ClInclude Include="Collision.h" />
     <ClInclude Include="Input.h" />
     <ClInclude Include="CapsulePrimitive.h" />
+    <ClInclude Include="CollisionModels.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp" />
@@ -54,6 +55,7 @@
     <ClCompile Include="Collision.cpp" />
     <ClCompile Include="Input.cpp" />
     <ClCompile Include="CapsulePrimitive.cpp" />
+    <ClCompile Include="CollisionModels.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="resource.rc" />
