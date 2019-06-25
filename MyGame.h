@@ -8,7 +8,7 @@ class MyGame
 private:
 	// オブジェクト関連
 	std::unique_ptr<CollisionObject<Collisions::Sphere>> m_objectA;
-	std::unique_ptr<CollisionObject<Collisions::Capsule>> m_objectB;
+	std::vector<std::unique_ptr<CollisionObject<Collisions::Capsule>>> m_objectB;
 
 public:
 	MyGame();

@@ -24,17 +24,30 @@ void MyGame::Initialize(GameContext & context)
 	m_objectA->m_objectPos = Vector3::Zero;
 	m_objectA->m_objectColor = Colors::Yellow;
 	m_objectA->m_objectVel = Vector3::Zero;
-	m_objectA->m_objectSize = Vector3::One;
+	m_objectA->m_objectSize = Vector3::One * 4;
 	m_objectA->m_objectWeight = 1;
 
 	// オブジェクトの要素を順に処理
-	m_objectB = std::make_unique<CollisionObject<Collisions::Capsule>>();
-	m_objectB->Initialize(context);
-	m_objectB->m_objectPos = Vector3::Right;
-	m_objectB->m_objectColor = Colors::Blue;
-	m_objectB->m_objectVel = Vector3::Zero;
-	m_objectB->m_objectSize = Vector3::One;
-	m_objectB->m_objectWeight = 1;
+	for (int iz = -5; iz <= 5; iz++) for (int ix = -5; ix <= 5; ix++)
+	{
+		auto obj = std::make_unique<CollisionObject<Collisions::Capsule>>();
+		obj->Initialize(context);
+		obj->m_objectPos = Vector3(float(ix), 0, float(iz));
+		obj->m_objectColor = Colors::Blue;
+		obj->m_objectVel = Vector3::Zero;
+		obj->m_objectSize = Vector3::One;
+		obj->m_objectWeight = 1;
+		m_objectB.emplace_back(std::move(obj));
+	}
+}
+
+namespace
+{
+	// 線形補間
+	float Lerp(float a, float b, float x)
+	{
+		return a + (b - a) * x;
+	}
 }
 
 void MyGame::Update(GameContext & context)
@@ -56,16 +69,34 @@ void MyGame::Update(GameContext & context)
 			input.y -= 1;
 		if (key.E || key.Space)
 			input.y += 1;
+		if (key.Z)
+			m_objectA->m_objectSize /= 1.1f;
+		if (key.C)
+			m_objectA->m_objectSize *= 1.1f;
 		m_objectA->m_objectAcc = input * .01f;
 	}
 
 	// オブジェクトの更新
 	m_objectA->Update(context);
-	m_objectB->Update(context);
+	for (auto& obj : m_objectB)
+		obj->Update(context);
 
-	if (Collisions::IsHit(*m_objectA->m_objectCollider, *m_objectB->m_objectCollider))
+	for (auto& obj : m_objectB)
 	{
-		std::swap(m_objectA->m_objectVel, m_objectB->m_objectVel);
+		if (Collisions::IsHit(*m_objectA->m_objectCollider, *obj->m_objectCollider))
+		{
+			//std::swap(m_objectA->m_objectVel, m_objectB->m_objectVel);
+			obj->m_objectAcc.y = .2f;
+		}
+		else
+		{
+			obj->m_objectAcc.y = -.2f;
+		}
+		if (obj->m_objectPos.y <= 0.f)
+		{
+			obj->m_objectPos.y = 0.f;
+			obj->m_objectVel.y = 0.f;
+		}
 	}
 }
 
@@ -73,12 +104,14 @@ void MyGame::Render(GameContext & context)
 {
 	// オブジェクトの描画
 	m_objectA->Render(context);
-	m_objectB->Render(context);
+	for (auto& obj : m_objectB)
+		obj->Render(context);
 }
 
 void MyGame::Finalize(GameContext & context)
 {
 	// オブジェクトの解放
 	m_objectA->Finalize(context);
-	m_objectB->Finalize(context);
+	for (auto& obj : m_objectB)
+		obj->Finalize(context);
 }
