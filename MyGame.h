@@ -8,7 +8,7 @@ class MyGame
 private:
 	// オブジェクト関連
 	std::unique_ptr<CollisionObject<Collisions::Capsule>> m_objectA;
-	std::vector<std::unique_ptr<CollisionObject<Collisions::Sphere>>> m_objectB;
+	std::vector<std::unique_ptr<CollisionObject<Collisions::Capsule>>> m_objectB;
 
 	// フォント
 	std::unique_ptr<DirectX::SpriteFont> m_font;

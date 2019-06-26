@@ -33,4 +33,14 @@ namespace Collisions
 	bool IsHit(const Sphere& obj1, const Sphere& obj2);
 	template<>
 	bool IsHit(const Sphere& obj1, const Capsule& obj2);
+	template<>
+	bool IsHit(const Capsule& obj1, const Capsule& obj2);
+
+	template<typename A, typename B>
+	DirectX::SimpleMath::Vector3 GetHitNormal(const A& obj1, const B& obj2)
+	{
+		return -GetHitNormal<B, A>(obj2, obj1);
+	}
+	template<>
+	DirectX::SimpleMath::Vector3 GetHitNormal(const Capsule& obj1, const Capsule& obj2);
 }

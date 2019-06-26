@@ -31,7 +31,7 @@ void MyGame::Initialize(GameContext & context)
 	// オブジェクトの要素を順に処理
 	for (int iz = -5; iz <= 5; iz++) for (int ix = -5; ix <= 5; ix++)
 	{
-		auto obj = std::make_unique<CollisionObject<Collisions::Sphere>>();
+		auto obj = std::make_unique<CollisionObject<Collisions::Capsule>>();
 		obj->Initialize(context);
 		obj->m_objectPos = Vector3(float(ix), 0, float(iz));
 		obj->m_objectColor = Colors::Blue;
@@ -101,17 +101,9 @@ void MyGame::Update(GameContext & context)
 	{
 		if (Collisions::IsHit(*m_objectA->m_objectCollider, *obj->m_objectCollider))
 		{
-			//std::swap(m_objectA->m_objectVel, m_objectB->m_objectVel);
-			obj->m_objectAcc.y = .2f;
-		}
-		else
-		{
-			obj->m_objectAcc.y = -.2f;
-		}
-		if (obj->m_objectPos.y <= 0.f)
-		{
-			obj->m_objectPos.y = 0.f;
-			obj->m_objectVel.y = 0.f;
+			auto norm = Collisions::GetHitNormal(*m_objectA->m_objectCollider, *obj->m_objectCollider);
+			m_objectA->m_objectVel = Vector3::Reflect(m_objectA->m_objectVel, norm);
+			obj->m_objectVel = Vector3::Reflect(obj->m_objectVel, norm);
 		}
 	}
 }
