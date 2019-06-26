@@ -21,15 +21,15 @@ void MyGame::Initialize(GameContext & context)
 	// オブジェクトの要素を順に処理
 	m_objectA = std::make_unique<CollisionObject<Collisions::Capsule>>();
 	m_objectA->Initialize(context);
-	m_objectA->m_objectPos = Vector3::Zero;
+	m_objectA->m_objectPos = Vector3(2, 0, 0);
 	m_objectA->m_objectColor = Colors::Yellow;
 	m_objectA->m_objectVel = Vector3::Zero;
-	m_objectA->m_objectSize = Vector3::One * 4;
+	m_objectA->m_objectSize = Vector3::One;
 	m_objectA->m_objectRot = Quaternion::CreateFromAxisAngle(Vector3::UnitZ, XMConvertToRadians(45));
 	m_objectA->m_objectWeight = 1;
 
 	// オブジェクトの要素を順に処理
-	for (int iz = -5; iz <= 5; iz++) for (int ix = -5; ix <= 5; ix++)
+	for (int iz = 0; iz <= 0; iz++) for (int ix = 0; ix <= 0; ix++)
 	{
 		auto obj = std::make_unique<CollisionObject<Collisions::Capsule>>();
 		obj->Initialize(context);
@@ -102,8 +102,11 @@ void MyGame::Update(GameContext & context)
 		if (Collisions::IsHit(*m_objectA->m_objectCollider, *obj->m_objectCollider))
 		{
 			auto norm = Collisions::GetHitNormal(*m_objectA->m_objectCollider, *obj->m_objectCollider);
+			norm.Normalize();
 			m_objectA->m_objectVel = Vector3::Reflect(m_objectA->m_objectVel, norm);
 			obj->m_objectVel = Vector3::Reflect(obj->m_objectVel, norm);
+			m_objectA->m_objectPos = Vector3::Reflect(m_objectA->m_objectVel, norm);
+			obj->m_objectPos = Vector3::Reflect(obj->m_objectVel, norm);
 		}
 	}
 }
