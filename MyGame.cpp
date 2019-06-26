@@ -157,7 +157,7 @@ void MyGame::Update(GameContext & context)
 void MyGame::Render(GameContext & context)
 {
 	auto& cam = context.GetCamera();
-	cam.view = m_pDebugCamera->getViewMatrix();
+	cam.view = Matrix::CreateTranslation(-m_objectA->m_objectPos) * m_pDebugCamera->getViewMatrix();
 	m_pGridFloor->draw(context.GetDR().GetD3DDeviceContext(), cam.view, cam.projection);
 
 	// オブジェクトの描画
