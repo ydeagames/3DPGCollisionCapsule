@@ -35,6 +35,7 @@
     <ClInclude Include="Input.h" />
     <ClInclude Include="CapsulePrimitive.h" />
     <ClInclude Include="CollisionModels.h" />
+    <ClInclude Include="InfinityGridFloor.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp" />
@@ -56,6 +57,7 @@
     <ClCompile Include="Input.cpp" />
     <ClCompile Include="CapsulePrimitive.cpp" />
     <ClCompile Include="CollisionModels.cpp" />
+    <ClCompile Include="InfinityGridFloor.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="resource.rc" />

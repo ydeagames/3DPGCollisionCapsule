@@ -5,7 +5,7 @@
 #include "Collision.h"
 #include "Input.h"
 #include "DebugCamera.h"
-#include "GridFloor.h"
+#include "InfinityGridFloor.h"
 
 using namespace DirectX;
 using namespace DirectX::SimpleMath;
@@ -21,7 +21,7 @@ MyGame::~MyGame()
 void MyGame::Initialize(GameContext& context)
 {
 	// グリッド床作成
-	m_pGridFloor = std::make_unique<GridFloor>(context.GetDR().GetD3DDevice(), context.GetDR().GetD3DDeviceContext(), &context.GetStates(), 10.0f, 10);
+	m_pGridFloor = std::make_unique<InfinityGridFloor>(context, 1.0f);
 	// デバッグカメラ作成
 	m_pDebugCamera = std::make_unique<DebugCamera>();
 
@@ -158,7 +158,7 @@ void MyGame::Render(GameContext & context)
 {
 	auto& cam = context.GetCamera();
 	cam.view = Matrix::CreateTranslation(-m_objectA->m_objectPos) * m_pDebugCamera->getViewMatrix();
-	m_pGridFloor->draw(context.GetDR().GetD3DDeviceContext(), cam.view, cam.projection);
+	m_pGridFloor->draw(context);
 
 	// オブジェクトの描画
 	m_objectA->Render(context);

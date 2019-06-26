@@ -175,6 +175,7 @@
     <ClInclude Include="GameCamera.h" />
     <ClInclude Include="GameContext.h" />
     <ClInclude Include="GridFloor.h" />
+    <ClInclude Include="InfinityGridFloor.h" />
     <ClInclude Include="Input.h" />
     <ClInclude Include="MyGame.h" />
     <ClInclude Include="pch.h" />
@@ -190,6 +191,7 @@
     <ClCompile Include="Game.cpp" />
     <ClCompile Include="GameCamera.cpp" />
     <ClCompile Include="GridFloor.cpp" />
+    <ClCompile Include="InfinityGridFloor.cpp" />
     <ClCompile Include="Input.cpp" />
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="MyGame.cpp" />

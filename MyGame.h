@@ -3,7 +3,7 @@
 
 class GameContext;
 class DebugCamera;
-class GridFloor;
+class InfinityGridFloor;
 
 class MyGame
 {
@@ -19,7 +19,7 @@ private:
 	// デバッグカメラ
 	std::unique_ptr<DebugCamera> m_pDebugCamera;
 	// グリッド床
-	std::unique_ptr<GridFloor> m_pGridFloor;
+	std::unique_ptr<InfinityGridFloor> m_pGridFloor;
 
 public:
 	MyGame();
