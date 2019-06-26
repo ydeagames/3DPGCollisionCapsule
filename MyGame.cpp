@@ -4,6 +4,8 @@
 #include "GameContext.h"
 #include "Collision.h"
 #include "Input.h"
+#include "DebugCamera.h"
+#include "GridFloor.h"
 
 using namespace DirectX;
 using namespace DirectX::SimpleMath;
@@ -16,8 +18,13 @@ MyGame::~MyGame()
 {
 }
 
-void MyGame::Initialize(GameContext & context)
+void MyGame::Initialize(GameContext& context)
 {
+	// グリッド床作成
+	m_pGridFloor = std::make_unique<GridFloor>(context.GetDR().GetD3DDevice(), context.GetDR().GetD3DDeviceContext(), &context.GetStates(), 10.0f, 10);
+	// デバッグカメラ作成
+	m_pDebugCamera = std::make_unique<DebugCamera>();
+
 	// オブジェクトの要素を順に処理
 	m_objectA = std::make_unique<CollisionObject<Collisions::Capsule>>();
 	m_objectA->Initialize(context);
@@ -53,7 +60,7 @@ namespace
 		return a + (b - a) * x;
 	}
 
-	std::pair<Vector3, Vector3> Decompose(const Vector3& normalVec, const Vector3& inVec)
+	std::pair<Vector3, Vector3> Decompose(const Vector3 & normalVec, const Vector3 & inVec)
 	{
 		// 位置の差のベクトルに対して垂直なベクトルと水平な方向に速度ベクトルを分解
 		auto normalVecNorm = normalVec;
@@ -79,6 +86,7 @@ namespace
 
 void MyGame::Update(GameContext & context)
 {
+	m_pDebugCamera->update();
 	Input::Update();
 
 	auto key = Keyboard::Get().GetState();
@@ -148,6 +156,10 @@ void MyGame::Update(GameContext & context)
 
 void MyGame::Render(GameContext & context)
 {
+	auto& cam = context.GetCamera();
+	cam.view = m_pDebugCamera->getViewMatrix();
+	m_pGridFloor->draw(context.GetDR().GetD3DDeviceContext(), cam.view, cam.projection);
+
 	// オブジェクトの描画
 	m_objectA->Render(context);
 	for (auto& obj : m_objectB)

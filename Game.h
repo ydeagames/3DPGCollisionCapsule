@@ -10,9 +10,6 @@
 #include "GameCamera.h"
 #include "MyGame.h"
 
-class DebugCamera;
-class GridFloor;
-
 // A basic game implementation that creates a D3D11 device and
 // provides a game loop.
 class Game : public DX::IDeviceNotify, public GameContext
@@ -64,10 +61,6 @@ private:
 	// キーボード
 	std::unique_ptr<DirectX::Keyboard>		m_pKeyboard;
 
-	// デバッグカメラ
-	DebugCamera*							m_pDebugCamera;
-	// グリッド床
-	GridFloor*								m_pGridFloor;
 	// コモンステート
 	std::unique_ptr<DirectX::CommonStates>	m_pState;
 

@@ -2,6 +2,8 @@
 #include "CollisionObject.h"
 
 class GameContext;
+class DebugCamera;
+class GridFloor;
 
 class MyGame
 {
@@ -13,6 +15,11 @@ private:
 	// フォント
 	std::unique_ptr<DirectX::SpriteFont> m_font;
 	std::unique_ptr<DirectX::SpriteBatch> m_batch;
+
+	// デバッグカメラ
+	std::unique_ptr<DebugCamera> m_pDebugCamera;
+	// グリッド床
+	std::unique_ptr<GridFloor> m_pGridFloor;
 
 public:
 	MyGame();

@@ -5,9 +5,6 @@
 #include "pch.h"
 #include "Game.h"
 
-#include "DebugCamera.h"
-#include "GridFloor.h"
-
 extern void ExitGame();
 
 using namespace DirectX;
@@ -15,8 +12,6 @@ using namespace DirectX;
 using Microsoft::WRL::ComPtr;
 
 Game::Game() noexcept(false)
-	: m_pDebugCamera(nullptr)
-	, m_pGridFloor(nullptr)
 {
     m_deviceResources = std::make_unique<DX::DeviceResources>();
     m_deviceResources->RegisterDeviceNotify(this);
@@ -24,16 +19,6 @@ Game::Game() noexcept(false)
 
 Game::~Game()
 {
-	if (m_pDebugCamera != nullptr)
-	{
-		delete m_pDebugCamera;
-		m_pDebugCamera = nullptr;
-	}
-	if (m_pGridFloor != nullptr)
-	{
-		delete m_pGridFloor;
-		m_pGridFloor = nullptr;
-	}
 }
 
 // Initialize the Direct3D resources required to run.
@@ -49,19 +34,12 @@ void Game::Initialize(HWND window, int width, int height)
 	// キーボード作成
 	m_pKeyboard = std::make_unique<Keyboard>();
 
-	// デバッグカメラ作成
-	m_pDebugCamera = new DebugCamera();
-
     m_deviceResources->SetWindow(window, width, height);
 
     m_deviceResources->CreateDeviceResources();
-    CreateDeviceDependentResources();
-
 	// コモンステート作成
 	m_pState = std::make_unique<CommonStates>(m_deviceResources->GetD3DDevice());
-
-	// グリッド床作成
-	m_pGridFloor = new GridFloor(m_deviceResources->GetD3DDevice(), m_deviceResources->GetD3DDeviceContext(), m_pState.get(), 10.0f, 10);
+    CreateDeviceDependentResources();
 
 	m_deviceResources->CreateWindowSizeDependentResources();
     CreateWindowSizeDependentResources();
@@ -96,8 +74,6 @@ void Game::Update(DX::StepTimer const& timer)
 
 	// ロジック更新
 	m_myGame->Update(*this);
-
-	m_pDebugCamera->update();
 }
 #pragma endregion
 
@@ -118,9 +94,6 @@ void Game::Render()
 
     // TODO: Add your rendering code here.
     context;
-
-	m_camera.view = m_pDebugCamera->getViewMatrix();
-	m_pGridFloor->draw(context, m_camera.view, m_camera.projection);
 
 	// ロジック描画
 	m_myGame->Render(*this);
