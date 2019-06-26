@@ -52,6 +52,29 @@ namespace
 	{
 		return a + (b - a) * x;
 	}
+
+	std::pair<Vector3, Vector3> Decompose(const Vector3& normalVec, const Vector3& inVec)
+	{
+		// 位置の差のベクトルに対して垂直なベクトルと水平な方向に速度ベクトルを分解
+		auto normalVecNorm = normalVec;
+		auto inVecNorm = inVec;
+		normalVecNorm.Normalize();
+		inVecNorm.Normalize();
+
+		// 先生のArrow.cpp
+		auto rotAngle = std::acos(normalVecNorm.Dot(inVecNorm));
+		auto rotAxis = normalVecNorm.Cross(inVecNorm);
+		if (rotAxis.Length() == 0.0f) rotAxis = Vector3(0.0f, 0.0f, 1.0f);
+
+		// 90度回転して垂直なベクトル軸
+		auto verticalNorm = Vector3::Transform(normalVecNorm, Quaternion::CreateFromAxisAngle(rotAxis, XMConvertToRadians(90)));
+		auto inVecLength = inVec.Length();
+		// sin cosで長さを加味
+		auto vecLateral = verticalNorm * inVecLength * std::sin(rotAngle);
+		auto vecDirection = normalVecNorm * inVecLength * std::cos(rotAngle);
+
+		return std::make_pair(vecDirection, vecLateral);
+	}
 }
 
 void MyGame::Update(GameContext & context)
@@ -77,7 +100,13 @@ void MyGame::Update(GameContext & context)
 			m_objectA->m_objectSize /= 1.1f;
 		if (key.C)
 			m_objectA->m_objectSize *= 1.1f;
-		m_objectA->m_objectAcc = input * .01f;
+
+		Vector3 s_, t_;
+		Quaternion rotation;
+		context.GetCamera().view.Decompose(s_, rotation, t_);
+		rotation.Inverse(rotation);
+
+		m_objectA->m_objectAcc = Vector3::Transform(input, rotation) * .01f;
 	}
 
 	static auto lastMouse = Vector3::Zero;
@@ -102,11 +131,17 @@ void MyGame::Update(GameContext & context)
 		if (Collisions::IsHit(*m_objectA->m_objectCollider, *obj->m_objectCollider))
 		{
 			auto norm = Collisions::GetHitNormal(*m_objectA->m_objectCollider, *obj->m_objectCollider);
-			norm.Normalize();
-			m_objectA->m_objectVel = Vector3::Reflect(m_objectA->m_objectVel, norm);
-			obj->m_objectVel = Vector3::Reflect(obj->m_objectVel, norm);
-			m_objectA->m_objectPos = Vector3::Reflect(m_objectA->m_objectVel, norm);
-			obj->m_objectPos = Vector3::Reflect(obj->m_objectVel, norm);
+			auto normNorm = norm;
+			normNorm.Normalize();
+
+			auto splitVecA = Decompose(norm, m_objectA->m_objectVel);
+			auto splitVecB = Decompose(norm, obj->m_objectVel);
+			m_objectA->m_objectVel = splitVecB.first + splitVecA.second;
+			obj->m_objectVel = splitVecA.first + splitVecB.second;
+			//float f = m_objectA->m_objectCollider->Radius / (m_objectA->m_objectCollider->Radius + obj->m_objectCollider->Radius);
+			//auto center = Vector3::Lerp(m_objectA->m_objectPos, obj->m_objectPos, f);
+			//m_objectA->m_objectPos = center - norm * .5f;
+			//obj->m_objectPos = center + norm * .5f;
 		}
 	}
 }
