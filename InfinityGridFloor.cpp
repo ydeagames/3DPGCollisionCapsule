@@ -57,6 +57,13 @@ void InfinityGridFloor::draw(GameContext& ctx, DirectX::GXMVECTOR color)
 	m_basicEffect->Apply(context);
 	context->IASetInputLayout(m_pInputLayout.Get());
 
+	auto ray1 = ctx.GetCamera().ViewportPointToRay(DirectX::SimpleMath::Vector3(-1, -1, 0));
+	auto ray2 = ctx.GetCamera().ViewportPointToRay(DirectX::SimpleMath::Vector3(1, 1, 0));
+	DirectX::SimpleMath::Plane plane = DirectX::SimpleMath::Plane(DirectX::SimpleMath::Vector3::Zero, DirectX::SimpleMath::Vector3::Up);
+	float dist1, dist2;
+	ray1.Intersects(plane, dist1);
+	ray2.Intersects(plane, dist2);
+
 	m_primitiveBatch->Begin();
 
 	const DirectX::XMVECTORF32 xAxis = { 10, 0.f, 0.f };
