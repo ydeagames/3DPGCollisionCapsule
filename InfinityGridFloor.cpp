@@ -6,6 +6,19 @@
 
 #include <algorithm>
 
+namespace
+{
+	float GetClamp(float x, float min, float max)
+	{
+		return std::min(std::max(x, min), max);
+	}
+
+	float GetNearest(float x, float target, float a, float b)
+	{
+		return std::abs(a - target) < std::abs(b - target) ? a : b;
+	}
+}
+
 // コンストラクタ
 InfinityGridFloor::InfinityGridFloor(GameContext& ctx, float cellsize) : m_cellsize(cellsize)
 {
@@ -57,41 +70,34 @@ void InfinityGridFloor::draw(GameContext& ctx, DirectX::GXMVECTOR color)
 	m_basicEffect->Apply(context);
 	context->IASetInputLayout(m_pInputLayout.Get());
 
+	auto campos = ctx.GetCamera().GetPosition();
 	auto ray1 = ctx.GetCamera().ViewportPointToRay(DirectX::SimpleMath::Vector3(-1, -1, 0));
 	auto ray2 = ctx.GetCamera().ViewportPointToRay(DirectX::SimpleMath::Vector3(1, 1, 0));
 	DirectX::SimpleMath::Plane plane = DirectX::SimpleMath::Plane(DirectX::SimpleMath::Vector3::Zero, DirectX::SimpleMath::Vector3::Up);
-	float dist1, dist2;
-	ray1.Intersects(plane, dist1);
-	ray2.Intersects(plane, dist2);
+
+	DirectX::SimpleMath::Vector3 q1 = campos + DirectX::SimpleMath::Vector3(1, 0, 1) * 50;
+	DirectX::SimpleMath::Vector3 q2 = campos + DirectX::SimpleMath::Vector3(1, 0, 1) * -50;
 
 	m_primitiveBatch->Begin();
 
-	const DirectX::XMVECTORF32 xAxis = { 10, 0.f, 0.f };
-	const DirectX::XMVECTORF32 yAxis = { 0.f, 0.f, 10 };
-
-	size_t divs = std::max<size_t>(1, 10);
-	DirectX::FXMVECTOR origin = DirectX::g_XMZero;
-	for (size_t i = 0; i <= divs; ++i)
+	float ax1 = std::min(q1.x, q2.x);
+	float ax2 = std::max(q1.x, q2.x);
+	float az1 = std::min(q1.z, q2.z);
+	float az2 = std::max(q1.z, q2.z);
+	int tx1 = int(std::floor(ax1 / m_cellsize));
+	int tx2 = int(std::floor(ax2 / m_cellsize));
+	int tz1 = int(std::floor(az1 / m_cellsize));
+	int tz2 = int(std::floor(az2 / m_cellsize));
+	for (int i = tx1; i <= tx2; ++i)
 	{
-		float fPercent = float(i) / float(divs);
-		fPercent = (fPercent * 1.0f) - 0.5f;
-		DirectX::XMVECTOR vScale = XMVectorScale(xAxis, fPercent);
-		vScale = DirectX::XMVectorAdd(vScale, origin);
-
-		DirectX::VertexPositionColor v1(DirectX::XMVectorSubtract(vScale, yAxis * 0.5f), color);
-		DirectX::VertexPositionColor v2(DirectX::XMVectorAdd(vScale, yAxis * 0.5f), color);
+		DirectX::VertexPositionColor v1(DirectX::SimpleMath::Vector3(i * m_cellsize, 0, az1), color);
+		DirectX::VertexPositionColor v2(DirectX::SimpleMath::Vector3(i * m_cellsize, 0, az2), color);
 		m_primitiveBatch->DrawLine(v1, v2);
 	}
-
-	for (size_t i = 0; i <= divs; i++)
+	for (int i = tz1; i <= tz2; ++i)
 	{
-		FLOAT fPercent = float(i) / float(divs);
-		fPercent = (fPercent * 1.0f) - 0.5f;
-		DirectX::XMVECTOR vScale = XMVectorScale(yAxis, fPercent);
-		vScale = DirectX::XMVectorAdd(vScale, origin);
-
-		DirectX::VertexPositionColor v1(DirectX::XMVectorSubtract(vScale, xAxis * 0.5f), color);
-		DirectX::VertexPositionColor v2(DirectX::XMVectorAdd(vScale, xAxis * 0.5f), color);
+		DirectX::VertexPositionColor v1(DirectX::SimpleMath::Vector3(ax1, 0, i * m_cellsize), color);
+		DirectX::VertexPositionColor v2(DirectX::SimpleMath::Vector3(ax2, 0, i * m_cellsize), color);
 		m_primitiveBatch->DrawLine(v1, v2);
 	}
 
