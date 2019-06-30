@@ -7,8 +7,11 @@
 #include "DebugCamera.h"
 #include "InfinityGridFloor.h"
 
+#define PX_RELEASE(x)	if(x)	{ x->release(); x = NULL;	}
+
 using namespace DirectX;
 using namespace DirectX::SimpleMath;
+using namespace physx;
 
 MyGame::MyGame()
 {
@@ -20,20 +23,60 @@ MyGame::~MyGame()
 
 void MyGame::Initialize(GameContext& context)
 {
+	gFoundation = PxCreateFoundation(PX_PHYSICS_VERSION, gAllocator, gErrorCallback);
+
+	gPvd = PxCreatePvd(*gFoundation);
+	PxPvdTransport* transport = PxDefaultPvdSocketTransportCreate("127.0.0.1", 5425, 10);
+	gPvd->connect(*transport, PxPvdInstrumentationFlag::eALL);
+
+	gPhysics = PxCreatePhysics(PX_PHYSICS_VERSION, *gFoundation, PxTolerancesScale(), true, gPvd);
+
+	PxSceneDesc sceneDesc(gPhysics->getTolerancesScale());
+	sceneDesc.gravity = PxVec3(0.0f, -9.81f, 0.0f);
+	gDispatcher = PxDefaultCpuDispatcherCreate(2);
+	sceneDesc.cpuDispatcher = gDispatcher;
+	sceneDesc.filterShader = PxDefaultSimulationFilterShader;
+	gScene = gPhysics->createScene(sceneDesc);
+
+	PxPvdSceneClient* pvdClient = gScene->getScenePvdClient();
+	if (pvdClient)
+	{
+		pvdClient->setScenePvdFlag(PxPvdSceneFlag::eTRANSMIT_CONSTRAINTS, true);
+		pvdClient->setScenePvdFlag(PxPvdSceneFlag::eTRANSMIT_CONTACTS, true);
+		pvdClient->setScenePvdFlag(PxPvdSceneFlag::eTRANSMIT_SCENEQUERIES, true);
+	}
+	gMaterial = gPhysics->createMaterial(0.5f, 0.5f, 0.6f);
+
+	PxRigidStatic* groundPlane = PxCreatePlane(*gPhysics, PxPlane(0, 1, 0, 0), *gMaterial);
+	gScene->addActor(*groundPlane);
+
 	// グリッド床作成
 	m_pGridFloor = std::make_unique<InfinityGridFloor>(context, 1.0f);
 	// デバッグカメラ作成
 	m_pDebugCamera = std::make_unique<DebugCamera>();
 
 	// オブジェクトの要素を順に処理
-	m_objectA = std::make_unique<CollisionObject<Collisions::Capsule>>();
-	m_objectA->Initialize(context);
-	m_objectA->m_objectPos = Vector3(0, 0, 0);
-	m_objectA->m_objectColor = Colors::Yellow;
-	m_objectA->m_objectVel = Vector3::Zero;
-	m_objectA->m_objectSize = Vector3::One;
-	m_objectA->m_objectRot = Quaternion::CreateFromAxisAngle(Vector3::UnitZ, XMConvertToRadians(45));
-	m_objectA->m_objectWeight = 10;
+	{
+		auto& obj = m_objectA;
+
+		obj = std::make_unique<CollisionObject<Collisions::Capsule>>();
+		obj->Initialize(context);
+		obj->m_objectPos = Vector3(0, 0, 0);
+		obj->m_objectColor = Colors::Yellow;
+		obj->m_objectVel = Vector3::Zero;
+		obj->m_objectSize = Vector3::One;
+		obj->m_objectRot = Quaternion::CreateFromAxisAngle(Vector3::UnitZ, XMConvertToRadians(45));
+		obj->m_objectWeight = 10;
+
+		float radius = std::max({ obj->m_objectSize.x, obj->m_objectSize.y, obj->m_objectSize.z }) * .5f;
+		PxShape* shape = gPhysics->createShape(PxCapsuleGeometry(radius, obj->m_objectSize.y - radius), *gMaterial);
+		PxTransform localTm(PxVec3(obj->m_objectPos.x, obj->m_objectPos.y, obj->m_objectPos.z));
+		auto body = make_px_unique(gPhysics->createRigidDynamic(localTm));
+		body->attachShape(*shape);
+		PxRigidBodyExt::updateMassAndInertia(*body, 10.0f);
+		gScene->addActor(*body);
+		obj->m_objectRigidbody = std::dynamic_pointer_cast(std::move(body));
+	}
 
 	// オブジェクトの要素を順に処理
 	for (int iz = -4; iz <= 4; iz++) for (int ix = -4; ix <= 4; ix++)
@@ -47,6 +90,16 @@ void MyGame::Initialize(GameContext& context)
 		obj->m_objectVel = Vector3::Zero;
 		obj->m_objectSize = Vector3::One;
 		obj->m_objectWeight = 1;
+
+		float radius = std::max({ obj->m_objectSize.x, obj->m_objectSize.y, obj->m_objectSize.z }) * .5f;
+		PxShape* shape = gPhysics->createShape(PxCapsuleGeometry(radius, obj->m_objectSize.y - radius), *gMaterial);
+		PxTransform localTm(PxVec3(obj->m_objectPos.x, obj->m_objectPos.y, obj->m_objectPos.z));
+		auto body = make_px_unique(gPhysics->createRigidDynamic(localTm));
+		body->attachShape(*shape);
+		PxRigidBodyExt::updateMassAndInertia(*body, 10.0f);
+		gScene->addActor(*body);
+		obj->m_objectRigidbody = std::move(body);
+
 		m_objectB.emplace_back(std::move(obj));
 	}
 
@@ -131,6 +184,9 @@ namespace
 
 void MyGame::Update(GameContext & context)
 {
+	gScene->simulate(1.0f / 60.0f);
+	gScene->fetchResults(true);
+
 	m_pDebugCamera->update();
 	Input::Update();
 
@@ -270,4 +326,15 @@ void MyGame::Finalize(GameContext & context)
 	m_objectA->Finalize(context);
 	for (auto& obj : m_objectB)
 		obj->Finalize(context);
+	
+	PX_RELEASE(gScene);
+	PX_RELEASE(gDispatcher);
+	PX_RELEASE(gPhysics);
+	if (gPvd)
+	{
+		PxPvdTransport* transport = gPvd->getTransport();
+		gPvd->release();	gPvd = NULL;
+		PX_RELEASE(transport);
+	}
+	PX_RELEASE(gFoundation);
 }

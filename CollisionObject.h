@@ -15,6 +15,16 @@ namespace CollisionGenerators
 }
 
 template<typename T>
+using px_unique = std::unique_ptr<T, std::function<void(T*)>>;
+
+template<typename T>
+auto make_px_unique(T* obj)
+{
+	auto deleter = [](T * f) { f->release(); };
+	return px_unique<T>{obj, deleter};
+}
+
+template<typename T>
 class CollisionObject
 {
 public:
@@ -31,6 +41,7 @@ public:
 	std::unique_ptr<T>								m_objectCollider;	// オブジェクトの当たり判定
 	bool											m_objectWireframe;	// オブジェクトがワイヤーフレームか
 	float											m_objectWeight;		// オブジェクトの重さ
+	px_unique<physx::PxRigidBody>					m_objectRigidbody;	// リジッドボディー
 
 public:
 	// 生成
@@ -43,14 +54,14 @@ public:
 	// 更新
 	void CollisionObject::Update(GameContext & context)
 	{
-		// オブジェクトの物理
-		m_objectVel += m_objectAcc;
-		m_objectVel *= .98f;
-		m_objectPos += m_objectVel;
-		// オブジェクトの更新
-		m_objectMatrix = Matrix::CreateScale(m_objectSize) * Matrix::CreateFromQuaternion(m_objectRot) * Matrix::CreateTranslation(m_objectPos);
-		// オブジェクトの当たり判定
-		m_objectCollider = std::make_unique<T>(CollisionGenerators::GetCollision<T>(*this));
+		//// オブジェクトの物理
+		//m_objectVel += m_objectAcc;
+		//m_objectVel *= .98f;
+		//m_objectPos += m_objectVel;
+		//// オブジェクトの更新
+		//m_objectMatrix = Matrix::CreateScale(m_objectSize) * Matrix::CreateFromQuaternion(m_objectRot) * Matrix::CreateTranslation(m_objectPos);
+		//// オブジェクトの当たり判定
+		//m_objectCollider = std::make_unique<T>(CollisionGenerators::GetCollision<T>(*this));
 	}
 
 	// 描画

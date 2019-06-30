@@ -72,4 +72,7 @@
       <Filter>Assets</Filter>
     </Manifest>
   </ItemGroup>
+  <ItemGroup>
+    <None Include="PhysXPropertySheet.props" />
+  </ItemGroup>
 </Project>

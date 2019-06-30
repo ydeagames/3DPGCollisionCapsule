@@ -93,6 +93,9 @@
 #include <dxgidebug.h>
 #endif
 
+// PhysX
+#include <PxPhysicsAPI.h>
+
 namespace DX
 {
     // Helper class for COM exceptions
