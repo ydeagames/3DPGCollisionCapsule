@@ -15,16 +15,6 @@ namespace CollisionGenerators
 }
 
 template<typename T>
-using px_unique = std::unique_ptr<T, std::function<void(T*)>>;
-
-template<typename T>
-auto make_px_unique(T* obj)
-{
-	auto deleter = [](T * f) { f->release(); };
-	return px_unique<T>{obj, deleter};
-}
-
-template<typename T>
 class CollisionObject
 {
 public:
@@ -41,9 +31,13 @@ public:
 	std::unique_ptr<T>								m_objectCollider;	// オブジェクトの当たり判定
 	bool											m_objectWireframe;	// オブジェクトがワイヤーフレームか
 	float											m_objectWeight;		// オブジェクトの重さ
-	px_unique<physx::PxRigidBody>					m_objectRigidbody;	// リジッドボディー
+	physx::PxRigidBody*								m_objectRigidbody = nullptr;	// リジッドボディー
 
 public:
+	~CollisionObject()
+	{
+	}
+
 	// 生成
 	void CollisionObject::Initialize(GameContext & context)
 	{
@@ -54,14 +48,23 @@ public:
 	// 更新
 	void CollisionObject::Update(GameContext & context)
 	{
+		int num = m_objectRigidbody->getNbShapes();
+		std::vector<physx::PxShape*> shapes(num);
+		m_objectRigidbody->getShapes(&shapes[0], num);
+
+		auto& shape = shapes[0];
+		auto transform = physx::PxShapeExt::getGlobalPose(*shape, *m_objectRigidbody);
+		m_objectPos = DirectX::SimpleMath::Vector3(transform.p.x, transform.p.y, transform.p.z);
+		m_objectRot = DirectX::SimpleMath::Quaternion(transform.q.x, transform.q.y, transform.q.z, transform.q.w);
+
 		//// オブジェクトの物理
 		//m_objectVel += m_objectAcc;
 		//m_objectVel *= .98f;
 		//m_objectPos += m_objectVel;
-		//// オブジェクトの更新
-		//m_objectMatrix = Matrix::CreateScale(m_objectSize) * Matrix::CreateFromQuaternion(m_objectRot) * Matrix::CreateTranslation(m_objectPos);
-		//// オブジェクトの当たり判定
-		//m_objectCollider = std::make_unique<T>(CollisionGenerators::GetCollision<T>(*this));
+		// オブジェクトの更新
+		m_objectMatrix = Matrix::CreateRotationZ(DirectX::XMConvertToRadians(90)) * Matrix::CreateScale(m_objectSize) * Matrix::CreateFromQuaternion(m_objectRot) * Matrix::CreateTranslation(m_objectPos);
+		// オブジェクトの当たり判定
+		m_objectCollider = std::make_unique<T>(CollisionGenerators::GetCollision<T>(*this));
 	}
 
 	// 描画

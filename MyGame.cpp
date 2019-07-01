@@ -19,6 +19,16 @@ MyGame::MyGame()
 
 MyGame::~MyGame()
 {
+	PX_RELEASE(gScene);
+	PX_RELEASE(gDispatcher);
+	PX_RELEASE(gPhysics);
+	if (gPvd)
+	{
+		PxPvdTransport* transport = gPvd->getTransport();
+		gPvd->release();	gPvd = NULL;
+		PX_RELEASE(transport);
+	}
+	PX_RELEASE(gFoundation);
 }
 
 void MyGame::Initialize(GameContext& context)
@@ -71,11 +81,11 @@ void MyGame::Initialize(GameContext& context)
 		float radius = std::max({ obj->m_objectSize.x, obj->m_objectSize.y, obj->m_objectSize.z }) * .5f;
 		PxShape* shape = gPhysics->createShape(PxCapsuleGeometry(radius, obj->m_objectSize.y - radius), *gMaterial);
 		PxTransform localTm(PxVec3(obj->m_objectPos.x, obj->m_objectPos.y, obj->m_objectPos.z));
-		auto body = make_px_unique(gPhysics->createRigidDynamic(localTm));
+		auto body = gPhysics->createRigidDynamic(localTm);
 		body->attachShape(*shape);
 		PxRigidBodyExt::updateMassAndInertia(*body, 10.0f);
 		gScene->addActor(*body);
-		obj->m_objectRigidbody = std::dynamic_pointer_cast(std::move(body));
+		obj->m_objectRigidbody = body;
 	}
 
 	// オブジェクトの要素を順に処理
@@ -94,11 +104,11 @@ void MyGame::Initialize(GameContext& context)
 		float radius = std::max({ obj->m_objectSize.x, obj->m_objectSize.y, obj->m_objectSize.z }) * .5f;
 		PxShape* shape = gPhysics->createShape(PxCapsuleGeometry(radius, obj->m_objectSize.y - radius), *gMaterial);
 		PxTransform localTm(PxVec3(obj->m_objectPos.x, obj->m_objectPos.y, obj->m_objectPos.z));
-		auto body = make_px_unique(gPhysics->createRigidDynamic(localTm));
+		auto body = gPhysics->createRigidDynamic(localTm);
 		body->attachShape(*shape);
 		PxRigidBodyExt::updateMassAndInertia(*body, 10.0f);
 		gScene->addActor(*body);
-		obj->m_objectRigidbody = std::move(body);
+		obj->m_objectRigidbody = body;
 
 		m_objectB.emplace_back(std::move(obj));
 	}
@@ -215,7 +225,8 @@ void MyGame::Update(GameContext & context)
 		context.GetCamera().view.Decompose(s_, rotation, t_);
 		rotation.Inverse(rotation);
 
-		m_objectA->m_objectAcc = Vector3::Transform(input, rotation) * .01f;
+		auto force = Vector3::Transform(input, rotation) * 500.f;
+		m_objectA->m_objectRigidbody->addForce(PxVec3(force.x, force.y, force.z));
 	}
 
 	static auto lastMouse = Vector3::Zero;
@@ -235,15 +246,15 @@ void MyGame::Update(GameContext & context)
 	for (auto& obj : m_objectB)
 		obj->Update(context);
 
-	for (auto& obj1 : m_objectB)
-		Collision(*obj1, *m_objectA);
+	//for (auto& obj1 : m_objectB)
+	//	Collision(*obj1, *m_objectA);
 
-	for (auto& obj1 : m_objectB)
-		for (auto& obj2 : m_objectB)
-			if (obj1 < obj2)
-			{
-				Collision(*obj1, *obj2);
-			}
+	//for (auto& obj1 : m_objectB)
+	//	for (auto& obj2 : m_objectB)
+	//		if (obj1 < obj2)
+	//		{
+	//			Collision(*obj1, *obj2);
+	//		}
 }
 
 void MyGame::Render(GameContext & context)
@@ -326,15 +337,4 @@ void MyGame::Finalize(GameContext & context)
 	m_objectA->Finalize(context);
 	for (auto& obj : m_objectB)
 		obj->Finalize(context);
-	
-	PX_RELEASE(gScene);
-	PX_RELEASE(gDispatcher);
-	PX_RELEASE(gPhysics);
-	if (gPvd)
-	{
-		PxPvdTransport* transport = gPvd->getTransport();
-		gPvd->release();	gPvd = NULL;
-		PX_RELEASE(transport);
-	}
-	PX_RELEASE(gFoundation);
 }
