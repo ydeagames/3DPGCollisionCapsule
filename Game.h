@@ -56,6 +56,9 @@ private:
 	// Rendering loop timer.
 	DX::StepTimer                           m_timer;
 
+	// ラスター
+	Microsoft::WRL::ComPtr<ID3D11RasterizerState> m_raster;
+
 	// マウス
 	std::unique_ptr<DirectX::Mouse>			m_pMouse;
 	// キーボード
@@ -70,12 +73,12 @@ private:
 	std::unique_ptr<MyGame>					m_myGame;
 
 	// DeviceResource取得
-	DX::DeviceResources& GetDR()
+	DX::DeviceResources& GetDR() const
 	{
 		return *m_deviceResources;
 	}
 	// タイマー取得
-	DX::StepTimer& GetTimer()
+	const DX::StepTimer& GetTimer() const
 	{
 		return m_timer;
 	}
@@ -85,8 +88,13 @@ private:
 		return m_camera;
 	}
 	// コモンステート取得
-	DirectX::CommonStates& GetStates()
+	DirectX::CommonStates& GetStates() const
 	{
 		return *m_pState;
+	}
+	// ラスタライザーステート取得
+	ID3D11RasterizerState* GetRasterizerState() const
+	{
+		return m_raster.Get();
 	}
 };

@@ -329,6 +329,11 @@ void MyGame::Render(GameContext & context)
 	}
 
 	m_batch->End();
+
+	//static auto primitiveBatch = std::make_unique<PrimitiveBatch<VertexPositionColor>>(context.GetDR().GetD3DDeviceContext());
+	//primitiveBatch->Begin();
+	//primitiveBatch->DrawLine(VertexPositionColor(Vector3(-1, 0, 0), Colors::White), VertexPositionColor(Vector3(1, 1, 0), Colors::Blue));
+	//primitiveBatch->End();
 }
 
 void MyGame::Finalize(GameContext & context)

@@ -14,11 +14,13 @@ public:
 
 public:
 	// DeviceResource取得
-	virtual DX::DeviceResources& GetDR() = 0;
+	virtual DX::DeviceResources& GetDR() const = 0;
 	// タイマー取得
-	virtual DX::StepTimer& GetTimer() = 0;
+	virtual const DX::StepTimer& GetTimer() const = 0;
 	// カメラ取得
 	virtual GameCamera& GetCamera() = 0;
 	// コモンステート取得
-	virtual DirectX::CommonStates& GetStates() = 0;
+	virtual DirectX::CommonStates& GetStates() const = 0;
+	// ラスタライザーステート取得
+	virtual ID3D11RasterizerState* GetRasterizerState() const = 0;
 };

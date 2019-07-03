@@ -116,7 +116,7 @@ void Game::Clear()
 
     context->ClearRenderTargetView(renderTarget, Colors::CornflowerBlue);
     context->ClearDepthStencilView(depthStencil, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
-    context->OMSetRenderTargets(1, &renderTarget, depthStencil);
+	context->OMSetRenderTargets(1, &renderTarget, depthStencil);
 
     // Set the viewport.
     auto viewport = m_deviceResources->GetScreenViewport();
@@ -185,6 +185,13 @@ void Game::CreateDeviceDependentResources()
     // TODO: Initialize device dependent objects here (independent of window size).
     device;
 
+	CD3D11_RASTERIZER_DESC rastDesc(D3D11_FILL_SOLID, D3D11_CULL_NONE, FALSE,
+		D3D11_DEFAULT_DEPTH_BIAS, D3D11_DEFAULT_DEPTH_BIAS_CLAMP,
+		D3D11_DEFAULT_SLOPE_SCALED_DEPTH_BIAS, TRUE, FALSE, TRUE, FALSE);
+
+	DX::ThrowIfFailed(device->CreateRasterizerState(&rastDesc,
+		m_raster.ReleaseAndGetAddressOf()));
+
 	// ロジック作成
 	m_myGame->Initialize(*this);
 }
@@ -218,6 +225,7 @@ void Game::CreateWindowSizeDependentResources()
 void Game::OnDeviceLost()
 {
     // TODO: Add Direct3D resource cleanup here.
+	m_raster.Reset();
 
 	// ロジック解放
 	m_myGame->Finalize(*this);

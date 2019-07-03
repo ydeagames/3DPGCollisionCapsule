@@ -71,7 +71,10 @@ public:
 	void CollisionObject::Render(GameContext & context)
 	{
 		// オブジェクトの描画
-		m_object->Draw(m_objectMatrix, context.GetCamera().view, context.GetCamera().projection, m_objectColor, false, m_objectWireframe);
+		auto ctx = context.GetDR().GetD3DDeviceContext();
+		auto state = context.GetRasterizerState();
+		m_object->Draw(m_objectMatrix, context.GetCamera().view, context.GetCamera().projection, m_objectColor, false, m_objectWireframe,
+			[=]() { ctx->RSSetState(state); });
 	}
 
 	// 破棄

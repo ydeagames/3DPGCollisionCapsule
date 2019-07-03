@@ -59,6 +59,7 @@ void InfinityGridFloor::draw(GameContext& ctx, DirectX::GXMVECTOR color)
 
 	DirectX::SimpleMath::Matrix world;
 
+	context->RSSetState(ctx.GetRasterizerState());
 	context->OMSetBlendState(states.Opaque(), nullptr, 0xFFFFFFFF);
 	context->OMSetDepthStencilState(states.DepthDefault(), 0);
 
